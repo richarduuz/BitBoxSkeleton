@@ -1,14 +1,13 @@
 package unimelb.bitbox;
 
+import com.sun.security.ntlm.Server;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import unimelb.bitbox.util.Configuration;
-import unimelb.bitbox.util.FileSystemManager;
+import unimelb.bitbox.util.*;
 import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
-import unimelb.bitbox.util.FileSystemObserver;
-import unimelb.bitbox.util.testClient;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -16,6 +15,8 @@ import java.net.SocketException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
+import javax.crypto.SecretKey;
+import javax.crypto.KeyGenerator;
 
 public class ServerMain extends Thread implements FileSystemObserver {
 	private static Logger log = Logger.getLogger(ServerMain.class.getName());
@@ -29,7 +30,15 @@ public class ServerMain extends Thread implements FileSystemObserver {
 
 
 	public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
+
 		fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
+		ServerSocket clientSocket=new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("clientPort")));
+
+		///start a therad to listening the client port///
+		AcceptClient clientConnection=new AcceptClient("listening client",clientSocket);
+		clientConnection.start();
+		///finish///
+
 		String[] peerPortInfo = Configuration.getConfigurationValue("peers").split(",");
 		String[] peerHostInfo = Configuration.getConfigurationValue("advertisedName").split(",");
 		ServerSocket listenSocket = new ServerSocket(port);

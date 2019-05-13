@@ -18,7 +18,6 @@ public class acceptConnection extends Thread{
     private ServerSocket socket;
     private String ThreadName;
     private Thread t;
-    private BufferedReader in;
     private Socket clientSocket;
 
     public acceptConnection(String name,ServerSocket serverSocket)
