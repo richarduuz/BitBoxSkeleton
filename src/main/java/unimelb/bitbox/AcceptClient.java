@@ -23,6 +23,7 @@ public class AcceptClient extends Thread {
     private Socket clientSocket;
     private String[] authorized_keys=Configuration.getConfigurationValue("authorized_keys").split(",");
     private SecretKey sk;
+    private boolean flag = false;
 
 
     AcceptClient(String name, ServerSocket serverSocket){
@@ -56,6 +57,8 @@ public class AcceptClient extends Thread {
                     String identity=(String) Request.get("identity");
                     for(String keys:authorized_keys){
                         if (keys.split(" ")[2].equals(identity)){
+                            // add a flag to detect whether the public key is found
+                            flag = true;
                             String clientPublicKey=keys.split(" ")[1];
                             KeyGenerator kg=KeyGenerator.getInstance("AES");
                             kg.init(128);
@@ -70,6 +73,14 @@ public class AcceptClient extends Thread {
                             out.flush();
                         }
                     }
+                    if (!flag){
+                        AUTH_RESPONSE.put("command", "AUTH_RESPONSE");
+                        AUTH_RESPONSE.put("status", false);
+                        AUTH_RESPONSE.put("message", "public key not found");
+                        out.write(AUTH_RESPONSE.toJSONString() + '\n');
+                        out.flush();
+                }
+                flag = false;
                 }
             }
 
