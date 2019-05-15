@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * Created by ysy on 13/5/19.
@@ -18,12 +19,12 @@ import java.net.ServerSocket;
 public class ClientMonitor extends Thread {
     private String ThreadName;
     private Thread t;
-    private ServerSocket clientSocket;
+    private ServerSocket serverSocket;
 
     ClientMonitor(String name,ServerSocket socket)
     {
         ThreadName=name;
-        clientSocket=socket;
+        serverSocket=socket;
     }
 
     public void start()
@@ -38,6 +39,7 @@ public class ClientMonitor extends Thread {
     public void run(){
         try
         {
+            Socket clientSocket=serverSocket.accept();
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
             String clientMsg;
             JSONParser parser = new JSONParser();
