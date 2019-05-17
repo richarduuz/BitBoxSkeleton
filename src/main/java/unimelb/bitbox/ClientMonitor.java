@@ -107,10 +107,10 @@ public class ClientMonitor extends Thread {
                     System.out.println("Recieve list peers request from client");
                     ArrayList<String[]> connected_peer = ServerMain.connectedPeerInfo;
                     JSONArray peer = new JSONArray();
-                    for (String[] peerInfo: connected_peer){
+                    for (Socket key: ServerMain.peerSocket.keySet()){
                         JSONObject tobeAdd = new JSONObject();
-                        tobeAdd.put("host", peerInfo[0]);
-                        tobeAdd.put("port", Long.parseLong(peerInfo[1]));
+                        tobeAdd.put("host", ServerMain.peerSocket.get(key)[0]);
+                        tobeAdd.put("port", Long.parseLong(ServerMain.peerSocket.get(key)[1]));
                         peer.add(tobeAdd);
                     }
                     Response.put("command", "LIST_PEERS_RESPONSE");
