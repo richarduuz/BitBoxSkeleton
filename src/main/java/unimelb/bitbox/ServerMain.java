@@ -156,7 +156,7 @@ public class ServerMain extends Thread implements FileSystemObserver {
 				System.out.println("the connection is established");
 				System.out.println("host : " + Server_host);
 				System.out.println("port : " + Server_port+"\n");
-				peerSocket.put(socket,new String[]{socket.getLocalAddress().getHostName(),Configuration.getConfigurationValue("port")});
+				peerSocket.put(socket,new String[]{Server_host,String.valueOf(Server_port)});
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
