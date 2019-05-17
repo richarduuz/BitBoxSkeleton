@@ -133,12 +133,9 @@ public class ClientMonitor extends Thread {
                     Response.put("host", host);
                     Response.put("port", port);
                     sleep(1000);
-                    for (String[] s: ServerMain.connectedPeerInfo){
-                        System.out.println(s[0]);
-                        System.out.println(s[1]);
-                    }
-                    for (String[] peer : ServerMain.connectedPeerInfo){
-                        if (host.equals(peer[0])&& (port == Long.parseLong(peer[1]))){
+                    System.out.println("size: " + ServerMain.connectedPeerInfo.size());
+                    for (Socket key: ServerMain.peerSocket.keySet()){
+                        if (ServerMain.peerSocket.get(key)[0].equals(host) && Long.parseLong(ServerMain.peerSocket.get(key)[1]) == port){
                             flag = true;
                             Response.put("status", true);
                             Response.put("message", "connected to peer");
