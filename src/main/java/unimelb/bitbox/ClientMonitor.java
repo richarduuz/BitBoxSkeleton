@@ -125,34 +125,68 @@ public class ClientMonitor extends Thread {
                 {
                     String host = (String)js.get("host");
                     Long port = (long)js.get("port");
+                    startConnecting new_connection = new startConnecting(host, port, "new_connection");
+                    start();
+                    Response.put("command", "CONNECT_PEER_RESPONSE");
+                    Response.put("host", host);
+                    Response.put("port", port);
                     for (String[] peer : ServerMain.connectedPeerInfo){
                         if (host.equals(peer[0])&& (port == Long.parseLong(peer[1]))){
                             flag = true;
-                            Response.put("command", "CONNECT_PEER_RESONSE");
-                            Response.put("host", host);
-                            Response.put("port", port);
                             Response.put("status", true);
-                            Response.put("messsage", "connected to peer");
-                            payload.put("payload", generate_payload(Response, sk));
-                            out.write(payload.toJSONString() + "/n");
-                            out.flush();
-
-                            // Once message sent, close the socket
-                            clientSocket.close();
+                            Response.put("message", "connected to peer");
                         }
                     }
                     if (!flag){
-
+                        Response.put("status", false);
+                        Response.put("message", "connection fail");
                     }
+                    payload.put("payload", generate_payload(Response, sk));
+                    out.write(payload.toJSONString() + "/n");
+                    out.flush();
+
+                    // Once message sent, close the socket
+                    clientSocket.close();
                     break;
                 }
                 case ("DISCONNECT_PEER_REQUEST"):
                 {
+                    String host = (String)js.get("host");
+                    Long port = (long)js.get("port");
+                    Response.put("command", "DISCONNECT_PEER_RESPONSE");
+                    Response.put("host", host);
+                    Response.put("port", port);
+                    for (Socket key: ServerMain.peerSocket.keySet()){
+                        if (ServerMain.peerSocket.get(key)[0].equals(host) && Long.parseLong(ServerMain.peerSocket.get(key)[1]) == port){
+                            key.close();
+                            flag = true;
+                            Response.put("status", true);
+                            Response.put("message", "disconnect from peer");
+                        }
+                    }
+                    if (!flag){
+                        Response.put("status", false);
+                        Response.put("message", "connection not active");
+                    }
+                    payload.put("payload", generate_payload(Response, sk));
+                    out.write(payload.toJSONString() + "/n");
+                    out.flush();
+
+                    clientSocket.close();
+
+
+
                     break;
                 }
                 default:
                 {
                     Response.put("command", "Invalid request");
+                    Response.put("message", "Invalid request");
+                    payload.put("payload", generate_payload(Response, sk));
+                    out.write(payload.toJSONString() + "/n");
+                    out.flush();
+
+                    clientSocket.close();
                 }
             }
 
