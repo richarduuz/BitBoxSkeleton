@@ -9,8 +9,5 @@
         <module name="bitbox" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="bitbox" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
 </project>
