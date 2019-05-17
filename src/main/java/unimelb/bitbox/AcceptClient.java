@@ -80,7 +80,13 @@ public class AcceptClient extends Thread {
                         out.write(AUTH_RESPONSE.toJSONString() + '\n');
                         out.flush();
                 }
-                flag = false;
+                else{
+                        flag = false;
+                        // Once connect to client, create a client monitor
+                        ClientMonitor clientMonitor = new ClientMonitor("ClientSocket", clientSocket, sk);
+                        clientMonitor.start();
+
+                    }
                 }
             }
 
