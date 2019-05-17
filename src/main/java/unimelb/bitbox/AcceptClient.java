@@ -24,6 +24,7 @@ public class AcceptClient extends Thread {
     private String[] authorized_keys=Configuration.getConfigurationValue("authorized_keys").split(",");
     private SecretKey sk;
     private boolean flag = false;
+    private SecretKey secretKey;
 
 
     AcceptClient(String name, ServerSocket serverSocket){
@@ -45,6 +46,7 @@ public class AcceptClient extends Thread {
             {
                 JSONParser parser = new JSONParser();
                 clientSocket=socket.accept();
+                System.out.println("successful connection");
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), "UTF-8"));
                 BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));
                 String clientMsg = null;
@@ -54,6 +56,7 @@ public class AcceptClient extends Thread {
                 String ClientRequest = (String) Request.get("command");
                 if (ClientRequest.equals("AUTH_REQUEST"))
                 {
+                    System.out.println("recieve auth_request");
                     String identity=(String) Request.get("identity");
                     for(String keys:authorized_keys){
                         if (keys.split(" ")[2].equals(identity)){
@@ -63,6 +66,7 @@ public class AcceptClient extends Thread {
                             KeyGenerator kg=KeyGenerator.getInstance("AES");
                             kg.init(128);
                             SecretKey sk=kg.generateKey();
+                            secretKey = sk;
                             AUTH_RESPONSE.put("command","AUTH_RESPONSE");
                             AUTH_RESPONSE.put("status",true);
                             AUTH_RESPONSE.put("message","public key found");
@@ -83,7 +87,7 @@ public class AcceptClient extends Thread {
                 else{
                         flag = false;
                         // Once connect to client, create a client monitor
-                        ClientMonitor clientMonitor = new ClientMonitor("ClientSocket", clientSocket, sk);
+                        ClientMonitor clientMonitor = new ClientMonitor("ClientSocket", clientSocket, secretKey);
                         clientMonitor.start();
 
                     }
