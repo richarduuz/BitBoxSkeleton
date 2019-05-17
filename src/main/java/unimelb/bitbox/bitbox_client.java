@@ -51,6 +51,9 @@ public class bitbox_client {
             if (command.equals("CONNECT_PEER_REQUEST") || command.equals("DISCONNECT_PEER_REQUEST")){
                 String peer = argsBean.getPeer();
                 peer_host = peer.split(":")[0];
+                if (peer_host.equals("localhost")){
+                    peer_host = "127.0.0.1";
+                }
                 peer_port = Long.parseLong(peer.split(":")[1]);
             }
             String server_host = server.split(":")[0];
