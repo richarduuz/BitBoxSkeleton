@@ -38,19 +38,20 @@ public class bitbox_client {
                 }
                 case("connect_peer"):{
                     command = "CONNECT_PEER_REQUEST";
-                    String peer = argsBean.getPeer();
-                    String peer_host = peer.split(":")[0];
-                    long peer_port = Long.parseLong(peer.split(":")[1]);
                     break;
                 }
                 case("disconnect_peer"):{
                     command = "DISCONNECT_PEER_REQUEST";
-                    String peer = argsBean.getPeer();
-                    String peer_host = peer.split(":")[0];
-                    long peer_port = Long.parseLong(peer.split(":")[1]);
                     break;
                 }
 
+            }
+            String peer_host = null;
+            long peer_port = 0;
+            if (command.equals("CONNECT_PEER_REQUEST") || command.equals("DISCONNECT_PEER_REQUEST")){
+                String peer = argsBean.getPeer();
+                peer_host = peer.split(":")[0];
+                peer_port = Long.parseLong(peer.split(":")[1]);
             }
             String server_host = server.split(":")[0];
             long server_port = Long.parseLong(server.split(":")[1]);
@@ -78,7 +79,13 @@ public class bitbox_client {
                         break;
                     }
                     case("CONNECT_PEER_REQUEST"):{
-
+                        clientRequest.put("host", peer_host);
+                        clientRequest.put("port", peer_port);
+                        break;
+                    }
+                    case("DISCONNECT_PEER_REQUEST"):{
+                        clientRequest.put("host", peer_host);
+                        clientRequest.put("port", peer_port);
                         break;
                     }
                 }
@@ -103,6 +110,7 @@ public class bitbox_client {
                 byte[] decryptedResponse = decrypt.doFinal(encryptedResponse);
                 JSONObject serverResponse = (JSONObject)JsParser.parse(new String(decryptedResponse, "UTF-8"));
                 System.out.println(serverResponse.get("command"));
+                System.out.println(serverResponse.get("message"));
 
             }
 
