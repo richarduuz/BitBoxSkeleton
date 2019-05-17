@@ -113,7 +113,7 @@ public class ClientMonitor extends Thread {
                         tobeAdd.put("port", Long.parseLong(peerInfo[1]));
                         peer.add(tobeAdd);
                     }
-                    Response.put("command", "LIST_PEER_RESPONSE");
+                    Response.put("command", "LIST_PEERS_RESPONSE");
                     Response.put("peers", peer);
                     payload.put("payload", generate_payload(Response, sk));
                     out.write(payload.toJSONString() + '\n');
@@ -128,10 +128,15 @@ public class ClientMonitor extends Thread {
                     String host = (String)js.get("host");
                     Long port = (long)js.get("port");
                     startConnecting new_connection = new startConnecting(host, port, "new_connection");
-                    start();
+                    new_connection.start();
                     Response.put("command", "CONNECT_PEER_RESPONSE");
                     Response.put("host", host);
                     Response.put("port", port);
+                    sleep(1000);
+                    for (String[] s: ServerMain.connectedPeerInfo){
+                        System.out.println(s[0]);
+                        System.out.println(s[1]);
+                    }
                     for (String[] peer : ServerMain.connectedPeerInfo){
                         if (host.equals(peer[0])&& (port == Long.parseLong(peer[1]))){
                             flag = true;
@@ -194,6 +199,8 @@ public class ClientMonitor extends Thread {
 
         }catch (IOException e){
             //TODO process io exception
+        }catch(InterruptedException e){
+
         }
 
     }
