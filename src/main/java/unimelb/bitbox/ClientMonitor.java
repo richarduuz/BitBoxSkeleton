@@ -64,8 +64,9 @@ public class ClientMonitor extends Thread {
                     // Decrypt
                     Cipher cipher = Cipher.getInstance("AES");
                     cipher.init(Cipher.DECRYPT_MODE, sk);
-                    JSONObject clientRequest = (JSONObject)parser.parse(new String(cipher.doFinal(encryptPayload), "UTF8"));
+                    JSONObject clientRequest = (JSONObject)parser.parse(new String(cipher.doFinal(encryptPayload), "UTF-8"));
                     client_process(clientRequest);
+                    System.out.println(clientRequest.get("command"));
                     //TODO process the message from the client
 
                     //ServerPart server = new ServerPart("processing", socketRequest, ServerMain.fileSystemManager, clientSocket);
@@ -103,6 +104,7 @@ public class ClientMonitor extends Thread {
             switch (client_command){
                 case ("LIST_PEERS_REQUEST"):
                 {
+                    System.out.println("Recieve list peers request from client");
                     ArrayList<String[]> connected_peer = ServerMain.connectedPeerInfo;
                     JSONArray peer = new JSONArray();
                     for (String[] peerInfo: connected_peer){
@@ -114,7 +116,7 @@ public class ClientMonitor extends Thread {
                     Response.put("command", "LIST_PEER_RESPONSE");
                     Response.put("peers", peer);
                     payload.put("payload", generate_payload(Response, sk));
-                    out.write(payload.toJSONString() + "/n");
+                    out.write(payload.toJSONString() + '\n');
                     out.flush();
 
                     // Once message sent, close the socket
@@ -142,7 +144,7 @@ public class ClientMonitor extends Thread {
                         Response.put("message", "connection fail");
                     }
                     payload.put("payload", generate_payload(Response, sk));
-                    out.write(payload.toJSONString() + "/n");
+                    out.write(payload.toJSONString() + '\n');
                     out.flush();
 
                     // Once message sent, close the socket
@@ -169,7 +171,7 @@ public class ClientMonitor extends Thread {
                         Response.put("message", "connection not active");
                     }
                     payload.put("payload", generate_payload(Response, sk));
-                    out.write(payload.toJSONString() + "/n");
+                    out.write(payload.toJSONString() + '\n');
                     out.flush();
 
                     clientSocket.close();
@@ -183,7 +185,7 @@ public class ClientMonitor extends Thread {
                     Response.put("command", "Invalid request");
                     Response.put("message", "Invalid request");
                     payload.put("payload", generate_payload(Response, sk));
-                    out.write(payload.toJSONString() + "/n");
+                    out.write(payload.toJSONString() + '\n');
                     out.flush();
 
                     clientSocket.close();
@@ -196,12 +198,12 @@ public class ClientMonitor extends Thread {
 
     }
 
-    private String generate_payload(JSONObject js, SecretKey sk){
+    public String generate_payload(JSONObject js, SecretKey sk){
         String EncodedResponse = null;
         try{
             Cipher cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, sk);
-            byte[] EncryptedResponse = cipher.doFinal(js.toJSONString().getBytes());
+            byte[] EncryptedResponse = cipher.doFinal(js.toJSONString().getBytes("UTF-8"));
             EncodedResponse = Base64.getEncoder().encodeToString(EncryptedResponse);
         }catch (NoSuchAlgorithmException e){
             //TODO process no such algorithm exception
@@ -213,6 +215,8 @@ public class ClientMonitor extends Thread {
             //TODO process Illegal BlockSize exception
         }catch (BadPaddingException e){
             //TODO process bad padding exception
+        }catch (UnsupportedEncodingException e){
+            //TODO process unsupported encoding exception
         }
         return EncodedResponse;
 
