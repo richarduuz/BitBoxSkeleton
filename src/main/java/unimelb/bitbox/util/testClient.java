@@ -28,7 +28,7 @@ public class testClient extends Thread{
         tobeprocessed=tobeProcessed;
     }
 
-    public JSONObject generateRequest(FileSystemManager.FileSystemEvent fileSystemEvent){
+    public static JSONObject generateRequest(FileSystemManager.FileSystemEvent fileSystemEvent){
         JSONObject REQUEST=new JSONObject();
         switch (fileSystemEvent.event)
         {
