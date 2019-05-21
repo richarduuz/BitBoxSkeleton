@@ -33,8 +33,11 @@ public class ServerMain extends Thread implements FileSystemObserver {
 	public static ArrayList<String[]> connectedPeerInfo=new ArrayList<>();//[0] host, [1] port
     private String mode = Configuration.getConfigurationValue("mode");
     public static final int maximumRetryNumbers = Integer.parseInt(Configuration.getConfigurationValue("maximumRetryNumber"));
+	public static int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+
 
 	public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
+
 
 	    if (mode.equals("tcp")) {
 
@@ -96,17 +99,17 @@ public class ServerMain extends Thread implements FileSystemObserver {
         }
 
         else if (mode.equals("udp")) {
+	    	if (ServerMain.blockSize > 8192){
+	    		ServerMain.blockSize = 8192;
+			}
 			// UDP Process
 			fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
 			long UDP_Port = Long.parseLong(Configuration.getConfigurationValue("udpPort"));
-			int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
-			if (blockSize > 8192) {
-				blockSize = 8192;
-			}
+
 			DatagramSocket socket = new DatagramSocket((int) UDP_Port);
 			// Start listening
 
-			Udp_Server UDPServer = new Udp_Server("server", socket, blockSize);
+			Udp_Server UDPServer = new Udp_Server("server", socket);
 
 			UDPServer.start();
 
@@ -128,11 +131,11 @@ public class ServerMain extends Thread implements FileSystemObserver {
 							String host = peerHostInfo[i];
 							long port = portInfor[i];
 							if (i != peerHostInfo.length-1){
-								UDPClient udpClient = new UDPClient("client", host, port, blockSize, tobeprocessed.element());
+								UDPClient udpClient = new UDPClient("client", host, port, tobeprocessed.element());
 								udpClient.start();
 							}
 							else{
-								UDPClient udpClient = new UDPClient("client", host, port, blockSize, tobeprocessed.poll());
+								UDPClient udpClient = new UDPClient("client", host, port, tobeprocessed.poll());
 								udpClient.start();
 							}
 						}
