@@ -13,27 +13,22 @@ public class UDPClient extends Thread{
     private String host;
     private long port;
     private FileSystemManager.FileSystemEvent event;
-    private String message = null;
+    private boolean IsByteRequest = false;
     private String thread_name;
     private Thread t;
-    private long blockSize;
-    public ArrayList<FileSystemManager.FileSystemEvent> eventList = new ArrayList<>();
+    private DatagramPacket bytePacket;
 
-    public UDPClient(String name, String Host, long Port, long size, FileSystemManager.FileSystemEvent e){
+    public UDPClient(String name, String Host, long Port, FileSystemManager.FileSystemEvent e){
         thread_name = name;
         host = Host;
         port = Port;
         event = e;
-        blockSize = size;
-        eventList.add(e);
     }
 
-    public UDPClient(String name, String Host, long Port, long size, String Json_String){
+    public UDPClient(String name, DatagramPacket datagram, boolean byteRequest){
         thread_name = name;
-        host = Host;
-        port = Port;
-        message = Json_String;
-        blockSize = size;
+        IsByteRequest = byteRequest;
+        bytePacket = datagram;
     }
 
     public void start(){
@@ -50,30 +45,45 @@ public class UDPClient extends Thread{
             JSONObject request = new JSONObject();
             byte[] peerRequest;
             DatagramPacket packet = null;
-            if (message == null){
+            if (!IsByteRequest){
                 request = testClient.generateRequest(event);
                 peerRequest = request.toJSONString().getBytes("UTF-8");
+                InetAddress address = InetAddress.getByName(host);
+                packet =  new DatagramPacket(peerRequest, peerRequest.length, address, (int)port);
+                socket.send(packet);
+                System.out.println("Sending request to udp peer");
 
             }
             else {
-                peerRequest = message.getBytes("UTF-8");
+                socket.send(bytePacket);
             }
-            InetAddress address = InetAddress.getByName(host);
-            packet =  new DatagramPacket(peerRequest, peerRequest.length, address, (int)port);
-            socket.send(packet);
-            System.out.println("Sending request to udp peer");
-            byte [] responseBuffer = new byte[(int)blockSize];
-            DatagramPacket response = new DatagramPacket(responseBuffer, responseBuffer.length);
+
+
             // create a monitor to check response
-            ResponseMonitor monitor = new ResponseMonitor("monitor", response, socket, event);
-            monitor.start();
+            ResponseMonitor monitor;
+            if (!IsByteRequest){
+                monitor = new ResponseMonitor("monitor",  socket, event);
+                monitor.start();
+            }
+            else{
+                monitor = new ResponseMonitor("monitor",  socket, true);
+                monitor.start();
+
+            }
+
+
             int retry = 0;
             while(retry <= ServerMain.maximumRetryNumbers){
                 // timeout period : 6s (it should be 60s)
-                sleep(6000);
+                sleep(60000);
                 if (!monitor.flag){
                     System.out.println("no response");
-                    socket.send(packet);
+                    if (IsByteRequest){
+                        socket.send(bytePacket);
+                    }
+                    else{
+                        socket.send(packet);
+                    }
                     retry += 1;
                 }
 
