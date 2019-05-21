@@ -17,6 +17,9 @@ import java.util.*;
 import java.util.logging.Logger;
 import javax.crypto.SecretKey;
 import javax.crypto.KeyGenerator;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+
 
 public class ServerMain extends Thread implements FileSystemObserver {
 	private static Logger log = Logger.getLogger(ServerMain.class.getName());
@@ -24,68 +27,125 @@ public class ServerMain extends Thread implements FileSystemObserver {
 	public static final int maximumIncommingConnections = Integer.parseInt(Configuration.getConfigurationValue("maximumIncommingConnections"));
 	private int clientNumber = 0;
 	private int port = Integer.parseInt(Configuration.getConfigurationValue("port"));
+//	public static ArrayList<FileSystemEvent> eventList = new ArrayList<>();
 	public static Map<Socket,String[]> peerSocket = new HashMap<>();
 	public static Queue<FileSystemEvent> tobeprocessed = new LinkedList<FileSystemEvent>();
 	public static ArrayList<String[]> connectedPeerInfo=new ArrayList<>();//[0] host, [1] port
-
+    private String mode = Configuration.getConfigurationValue("mode");
+    public static final int maximumRetryNumbers = Integer.parseInt(Configuration.getConfigurationValue("maximumRetryNumber"));
 
 	public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
 
-		fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
-		ServerSocket clientSocket=new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("clientPort")));
-
-		///start a therad to listening the client port///
-		AcceptClient clientConnection=new AcceptClient("listening client",clientSocket);
-		clientConnection.start();
-		///finish///
-
-		String[] peerPortInfo = Configuration.getConfigurationValue("peers").split(",");
-		String[] peerHostInfo = Configuration.getConfigurationValue("advertisedName").split(",");
-		ServerSocket listenSocket = new ServerSocket(port);
-
-		///start a thread to listening the port///
-		acceptConnection connection = new acceptConnection("listening socket",listenSocket);
-		connection.start();
-		///finish///
-		try {
-		for (int i=0;i<peerPortInfo.length;i++) {
-			String peerPort=peerPortInfo[i].split(":")[1];
-			String peerHost=peerHostInfo[i];
-			startConnecting startconnecting=new startConnecting(peerHost,Long.parseLong(peerPort),"peer"+i);
-			startconnecting.start();
-			sleep(1000);
-		}
+	    if (mode.equals("tcp")) {
 
 
-			while (true) {
-				if (tobeprocessed.size() > 0) {
-					System.out.println("generating thread to process this event");
-					System.out.println("event content: "+tobeprocessed.element().toString()+"\n");
-					int peerCounter=0;
-					for (Socket peer : peerSocket.keySet()) {
-						if (peer != null) {
-							if(peerCounter!=peerSocket.size()-1)
-							{
-								testClient client = new testClient("client " + clientNumber, peer, fileSystemManager, tobeprocessed.element());
-								client.start();
+            fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
+            ServerSocket clientSocket = new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("clientPort")));
+
+            ///start a therad to listening the client port///
+            AcceptClient clientConnection = new AcceptClient("listening client", clientSocket);
+            clientConnection.start();
+            ///finish///
+
+            String[] peerPortInfo = Configuration.getConfigurationValue("peers").split(",");
+            String[] peerHostInfo = Configuration.getConfigurationValue("advertisedName").split(",");
+            ServerSocket listenSocket = new ServerSocket(port);
+
+            ///start a thread to listening the port///
+            acceptConnection connection = new acceptConnection("listening socket", listenSocket);
+            connection.start();
+            ///finish///
+            try {
+                for (int i = 0; i < peerPortInfo.length; i++) {
+                    String peerPort = peerPortInfo[i].split(":")[1];
+                    String peerHost = peerHostInfo[i];
+                    startConnecting startconnecting = new startConnecting(peerHost, Long.parseLong(peerPort), "peer" + i);
+                    startconnecting.start();
+                    sleep(1000);
+                }
+
+
+                while (true) {
+                    if (tobeprocessed.size() > 0) {
+                        System.out.println("generating thread to process this event");
+                        System.out.println("event content: " + tobeprocessed.element().toString() + "\n");
+                        int peerCounter = 0;
+                        for (Socket peer : peerSocket.keySet()) {
+                            if (peer != null) {
+                                if (peerCounter != peerSocket.size() - 1) {
+                                    testClient client = new testClient("client " + clientNumber, peer, fileSystemManager, tobeprocessed.element());
+                                    client.start();
+                                } else {
+                                    testClient client = new testClient("client " + clientNumber, peer, fileSystemManager, tobeprocessed.poll());
+                                    client.start();
+                                }
+                                peerCounter++;
+                            }
+                        }
+                    }
+                    sleep(1000);
+                }
+            } catch (SocketException ex) {
+                ex.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        else if (mode.equals("udp")) {
+			// UDP Process
+			fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
+			long UDP_Port = Long.parseLong(Configuration.getConfigurationValue("udpPort"));
+			int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+			if (blockSize > 8192) {
+				blockSize = 8192;
+			}
+			DatagramSocket socket = new DatagramSocket((int) UDP_Port);
+			// Start listening
+
+			Udp_Server UDPServer = new Udp_Server("server", socket, blockSize);
+
+			UDPServer.start();
+
+			// Start client
+			String[] peerPortInfo = Configuration.getConfigurationValue("peers").split(",");
+			long[] portInfor = new long[peerPortInfo.length];
+			for (int i = 0; i < peerPortInfo.length; i++) {
+				portInfor[i] = Long.parseLong(peerPortInfo[i].split(":")[1]);
+
+			}
+			String[] peerHostInfo = Configuration.getConfigurationValue("advertisedName").split(",");
+			try {
+
+				while (true) {
+					if (tobeprocessed.size() > 0) {
+						System.out.println("Sending request for new event");
+//						eventList.add(tobeprocessed.poll());
+						for (int i = 0; i < peerHostInfo.length; i++) {
+							String host = peerHostInfo[i];
+							long port = portInfor[i];
+							if (i != peerHostInfo.length-1){
+								UDPClient udpClient = new UDPClient("client", host, port, blockSize, tobeprocessed.element());
+								udpClient.start();
 							}
 							else{
-								testClient client = new testClient("client " + clientNumber, peer, fileSystemManager, tobeprocessed.poll());
-								client.start();
+								UDPClient udpClient = new UDPClient("client", host, port, blockSize, tobeprocessed.poll());
+								udpClient.start();
 							}
-							peerCounter++;
 						}
+
 					}
+					sleep(1000);
 				}
-				sleep(1000);
+
+			}catch (InterruptedException e){
+
 			}
-		} catch (SocketException ex) {
-			ex.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
+
 	}
 
 	@Override
