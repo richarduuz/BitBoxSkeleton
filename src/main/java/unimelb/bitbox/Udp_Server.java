@@ -127,6 +127,82 @@ public class Udp_Server extends Thread{
                     fileDescriptor = fileSystemManager.new FileDescriptor(lastModified, md5, fileSize);
                     switch (command) {
 
+                        case ("FILE_MODIFY_REQUEST"): {
+                            ///add new operation to the queue
+                            JSONObject RESPONSE=new JSONObject();
+
+                            if(fileSystemManager.isSafePathName(path_Name) && fileSystemManager.fileNameExists(path_Name)) {
+                                // Create file loader
+                                if (fileSystemManager.modifyFileLoader(path_Name, md5, lastModified)) {
+                                    RESPONSE.put("command", "FILE_MODIFY_RESPONSE");
+                                    RESPONSE.put("fileDescriptor", description);
+                                    RESPONSE.put("pathName", path_Name);
+                                    RESPONSE.put("message", "file loader ready");
+                                    RESPONSE.put("status", true);
+
+                                    byte[] packet = RESPONSE.toJSONString().getBytes("UTF-8");
+                                    peerResponse = new DatagramPacket(packet, packet.length, request.getAddress(), request.getPort());
+                                    UDPsocket.send(peerResponse);
+
+
+                                    // When the file loader is ready, send file_bytes_request to get the modified file
+                                    if (!fileSystemManager.checkShortcut(path_Name)){
+                                        JSONObject newRESPONSE = new JSONObject();
+                                        newRESPONSE.put("command", "FILE_BYTES_REQUEST");
+                                        newRESPONSE.put("fileDescriptor", description);
+                                        newRESPONSE.put("pathName", path_Name);
+
+                                        newRESPONSE.put("position", 0);
+                                        if ((int)fileSize>Integer.parseInt(Configuration.getConfigurationValue("blockSize")))
+                                            newRESPONSE.put("length", Long.parseLong(Configuration.getConfigurationValue("blockSize")));
+                                        else
+                                            newRESPONSE.put("length",fileSize);
+
+                                        byte[] packet_byteRequest = newRESPONSE.toJSONString().getBytes("UTF-8");
+                                        DatagramPacket newResponse = new DatagramPacket(packet_byteRequest, packet_byteRequest.length, request.getAddress(), request.getPort());
+                                        UDPClient udpClient = new UDPClient("client", newResponse, true);
+                                        udpClient.start();
+
+                                    }
+                                }
+                            }
+                            else{
+                                RESPONSE.put("command","FILE_MODIFY_RESPONSE");
+                                RESPONSE.put("fileDescriptor", description);
+                                RESPONSE.put("pathName", path_Name);
+
+                                // The pathName is out the the share directory
+                                if (!fileSystemManager.isSafePathName(path_Name)){
+                                    RESPONSE.put("message", "unsafe pathname given");
+                                    RESPONSE.put("status", false);
+                                }
+
+                                // matching to what the modification would have produced
+                                else if (fileSystemManager.modifyFileLoader(path_Name, md5, lastModified)){
+                                    RESPONSE.put("message", "file already exists with matching content");
+                                    RESPONSE.put("status", false);
+                                }
+
+                                // pathname does not exist
+                                else if (!fileSystemManager.fileNameExists(path_Name)){
+                                    RESPONSE.put("message", "pathname does not exist");
+                                    RESPONSE.put("status", false);
+                                }
+
+                                //Other problem
+                                else{
+                                    RESPONSE.put("message", "there was a problem modifying the file");
+                                    RESPONSE.put("status", false);
+                                }
+                                byte[] packet = RESPONSE.toJSONString().getBytes("UTF-8");
+                                peerResponse = new DatagramPacket(packet, packet.length, request.getAddress(), request.getPort());
+                                UDPsocket.send(peerResponse);
+
+                            }
+                            break;
+                        }
+
+
                         case ("FILE_CREATE_REQUEST"): {
                             JSONObject RESPONSE = new JSONObject();
                             if (fileSystemManager.isSafePathName(path_Name) && !fileSystemManager.fileNameExists(path_Name)) {
