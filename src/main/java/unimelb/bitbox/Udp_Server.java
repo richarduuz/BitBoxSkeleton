@@ -312,6 +312,71 @@ public class Udp_Server extends Thread{
                             }
                             break;
                         }
+                        case("FILE_BYTES_REQUEST"): {
+                            JSONObject RESPONSE = new JSONObject();
+                            long position = (long) peerRequest.get("position");
+                            long length = (long)peerRequest.get("length");
+                            String messages = (String) peerRequest.get("message");
+                            ByteBuffer readByte = fileSystemManager.readFile(md5, position, length);
+                            RESPONSE.put("command", "FILE_BYTES_RESPONSE");
+                            RESPONSE.put("fileDescriptor", description);
+                            RESPONSE.put("pathName", path_Name);
+                            RESPONSE.put("position", position);
+                            RESPONSE.put("length", length);
+                            RESPONSE.put("message", "successful read");
+                            RESPONSE.put("status",true);
+
+
+                            byte[] input=new byte[readByte.capacity()];
+                            for (int i=0;i<input.length;i++)
+                                input[i]=readByte.get(i);
+
+                            String readByte_encode= Base64.getEncoder().encodeToString(input);
+                            RESPONSE.put("content", readByte_encode);
+                            RESPONSE.put("message", "successful read");
+                            RESPONSE.put("status", true);
+                            byte[] packet = RESPONSE.toJSONString().getBytes("UTF-8");
+                            peerResponse = new DatagramPacket(packet, packet.length, request.getAddress(), request.getPort());
+                            UDPClient udpClient = new UDPClient("additionClient", peerResponse, true);
+                            udpClient.start();
+                            break;
+
+                        }
+                        case ("FILE_BYTES_RESPONSE"):{
+                            JSONObject RESPONSE = new JSONObject();
+                            long position = (long) peerRequest.get("position");
+                            long length = (long)peerRequest.get("length");
+                            String messages = (String) peerRequest.get("message");
+                            if (messages.equals("successful read")) {
+
+                                byte[] brc=Base64.getDecoder().decode((String)peerRequest.get("content"));
+                                ByteBuffer content_decoded=ByteBuffer.wrap(brc);
+                                //content_decoded.position(brc.length);
+                                if (fileSystemManager.writeFile(path_Name, content_decoded, position)) {
+                                    // 大文件还是会出现md5不对的问题
+                                    if (!fileSystemManager.checkWriteComplete(path_Name)) {
+                                        RESPONSE.put("command", "FILE_BYTES_REQUEST");
+                                        RESPONSE.put("fileDescriptor", description);
+                                        RESPONSE.put("pathName", path_Name);
+                                        RESPONSE.put("position", position + length);
+                                        if ((int)(fileSize - (position + length)) > ServerMain.blockSize){
+                                            RESPONSE.put("length", ServerMain.blockSize);
+                                        }
+                                        else{
+                                            RESPONSE.put("length", fileSize - position - length);
+                                        }
+
+                                        byte[] packet = RESPONSE.toJSONString().getBytes("UTF-8");
+                                        peerResponse = new DatagramPacket(packet, packet.length, request.getAddress(), request.getPort());
+                                        UDPClient udpClient = new UDPClient("additionClient", peerResponse, true);
+                                        udpClient.start();
+
+                                    }
+
+                                }
+                            }
+                            break;
+                        }
                         case ("FILE_DELETE_REQUEST"): {
                             JSONObject RESPONSE = new JSONObject();
                             RESPONSE.put("command", "FILE_DELETE_RESPONSE");
