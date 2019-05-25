@@ -14,8 +14,12 @@ import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
 
@@ -63,7 +67,7 @@ public class bitbox_client {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream(), "UTF-8"));
             JSONObject auth_request = new JSONObject();
             auth_request.put("command", "AUTH_REQUEST");
-            auth_request.put("identity", "taiq@student.unimelb.edu.au");
+            auth_request.put("identity", "QT@LAPTOP-442HE0V5");
             out.write(auth_request.toJSONString() + '\n');
             out.flush();
 
@@ -73,8 +77,15 @@ public class bitbox_client {
             System.out.println(auth_response.get("command") + ": " + auth_response.get("status"));
             if ((boolean)auth_response.get("status")){
                 String Base64AES = (String)auth_response.get("AES128");
+                //Base64 decoding
                 byte[] temp = Base64.getDecoder().decode(Base64AES);
-                SecretKeySpec sk = new SecretKeySpec(temp, "AES");
+                //RSA Decryption
+                PrivateKey privateKey = generatePrivateKey("C:/Users/QT/.ssh/newkey");
+                Cipher RSAcipher = Cipher.getInstance("RSA");
+                RSAcipher.init(Cipher.DECRYPT_MODE, privateKey);
+                byte[] aes128 = RSAcipher.doFinal(temp);
+                System.out.println("Complete RSA Decryption");
+                SecretKeySpec sk = new SecretKeySpec(aes128, "AES");
                 JSONObject clientRequest = new JSONObject();
                 clientRequest.put("command", command);
                 switch(command){
@@ -141,6 +152,53 @@ public class bitbox_client {
             //TODO process bad padding exception
         }
 
+    }
+
+    private static PrivateKey generatePrivateKey(String path){
+        PrivateKey privateKey = null;
+        String PKCS_1_PEM_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
+        String PKCS_1_PEM_FOOTER = "-----END RSA PRIVATE KEY-----";
+        try{
+            KeyFactory kf = KeyFactory.getInstance("RSA", "SunRsaSign");
+            PKCS8EncodedKeySpec keySpec;
+            byte[] keyBytes = Files.readAllBytes(Paths.get(path));
+            String keyString = new String(keyBytes, StandardCharsets.UTF_8);
+            if (keyString.contains(PKCS_1_PEM_HEADER)){
+                keyString = keyString.replace(PKCS_1_PEM_HEADER, "").replace("\n", "");
+                keyString = keyString.replace(PKCS_1_PEM_FOOTER, "").replace("\n", "");
+                byte[] data = readPkcs1PrivateKey(Base64.getDecoder().decode(keyString));
+                keySpec = new PKCS8EncodedKeySpec(data);
+                privateKey = kf.generatePrivate(keySpec);
+            }
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }catch (NoSuchAlgorithmException e){
+            e.printStackTrace();
+        }catch (NoSuchProviderException e){
+            e.printStackTrace();
+        }catch (InvalidKeySpecException e){
+
+        }catch (GeneralSecurityException e){
+            e.printStackTrace();
+        }
+        return privateKey;
+    }
+
+
+    private static byte[] readPkcs1PrivateKey(byte[] pkcs1Bytes){
+        int pkcs1Length = pkcs1Bytes.length;
+        int totalLength = pkcs1Length + 22;
+        byte[] pkcs8Header = new byte[] {
+                0x30, (byte) 0x82, (byte) ((totalLength >> 8) & 0xff), (byte) (totalLength & 0xff), // Sequence + total length
+                0x2, 0x1, 0x0, // Integer (0)
+                0x30, 0xD, 0x6, 0x9, 0x2A, (byte) 0x86, 0x48, (byte) 0x86, (byte) 0xF7, 0xD, 0x1, 0x1, 0x1, 0x5, 0x0, // Sequence: 1.2.840.113549.1.1.1, NULL
+                0x4, (byte) 0x82, (byte) ((pkcs1Length >> 8) & 0xff), (byte) (pkcs1Length & 0xff) // Octet string + length
+        };
+        byte[] pkcs8bytes = new byte[pkcs8Header.length + pkcs1Bytes.length];
+        System.arraycopy(pkcs8Header, 0, pkcs8bytes, 0, pkcs8Header.length);
+        System.arraycopy(pkcs1Bytes, 0, pkcs8bytes, pkcs8Header.length, pkcs1Bytes.length);
+        return pkcs8bytes;
     }
 
 }
