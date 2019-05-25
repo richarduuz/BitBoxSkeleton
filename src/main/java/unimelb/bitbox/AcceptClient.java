@@ -76,10 +76,10 @@ public class AcceptClient extends Thread {
                             // add a flag to detect whether the public key is found
                             flag = true;
                             String clientPublicKey=keys;
-                            String test = ("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFhO260GYWqHjE2APqs09KReSRSJbjzj7sCbjmIabDBXY2F9KTyN52eDdYPjrQibUbhmeyQqVOf4kdDxSVYLlpxIPfgUdcvjXw4OSZ65UxCpyTwBdYSCUHFqrAbvGgopl2sdibUyrRNsLJ8FT5Rq+M9ZHpoMjaLW4dnkaZq6hyDxxmtNluX7JVlzNWCfYO8Fmcii7REEur3BYq0CrH3WH8zFMGvvvoD+qmd6SPh8f4TLjZJ9TrarMnZ2HCqJDWqgTwMIZBwQ/fq3QPTgzZbZO90H3o1LM0q8MYgr5wRg2eAwL0+c89oI9OsOPyPDyeVD9Uw5NoQ7Re5LHahhms2KYDcfa7Z1sX7QONDcr/RlaIrW4rhekMy+FSu1FDmcQ64bqyj8TinYdaTe6TIybWIMTBVjV2vWGf5uP5JpXOmiw7gfPay22KC4xLVGRBQpiVM9KY8+AOekFX0s3TQSY5N9EOCVqU6mMahS04F4jUvBnYSMc8bb5M0GlVnafYHk2GHU/E88dsKeJC9vxgGcEndXwxhCsG5pfCtSqKfMz8bJOZl65fH8YpVSqe6q9w9YHNx/Qtiyh6/421o0JjFi2PUz+an11U+aUL9T8Itkh2B+PoGV4d9NtoqxGLE7iHhoXz+h3XCJbO9cj7BAJu/nyggIFU4PCAzC3JgTZMokkBEOCIiQ== QT@LAPTOP-442HE0V5");
-                            if (clientPublicKey.equals(test)){
-                                System.out.println(true);
-                            }
+//                            String test = ("ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDFhO260GYWqHjE2APqs09KReSRSJbjzj7sCbjmIabDBXY2F9KTyN52eDdYPjrQibUbhmeyQqVOf4kdDxSVYLlpxIPfgUdcvjXw4OSZ65UxCpyTwBdYSCUHFqrAbvGgopl2sdibUyrRNsLJ8FT5Rq+M9ZHpoMjaLW4dnkaZq6hyDxxmtNluX7JVlzNWCfYO8Fmcii7REEur3BYq0CrH3WH8zFMGvvvoD+qmd6SPh8f4TLjZJ9TrarMnZ2HCqJDWqgTwMIZBwQ/fq3QPTgzZbZO90H3o1LM0q8MYgr5wRg2eAwL0+c89oI9OsOPyPDyeVD9Uw5NoQ7Re5LHahhms2KYDcfa7Z1sX7QONDcr/RlaIrW4rhekMy+FSu1FDmcQ64bqyj8TinYdaTe6TIybWIMTBVjV2vWGf5uP5JpXOmiw7gfPay22KC4xLVGRBQpiVM9KY8+AOekFX0s3TQSY5N9EOCVqU6mMahS04F4jUvBnYSMc8bb5M0GlVnafYHk2GHU/E88dsKeJC9vxgGcEndXwxhCsG5pfCtSqKfMz8bJOZl65fH8YpVSqe6q9w9YHNx/Qtiyh6/421o0JjFi2PUz+an11U+aUL9T8Itkh2B+PoGV4d9NtoqxGLE7iHhoXz+h3XCJbO9cj7BAJu/nyggIFU4PCAzC3JgTZMokkBEOCIiQ== QT@LAPTOP-442HE0V5");
+//                            if (clientPublicKey.equals(test)){
+//                                System.out.println(true);
+//                            }
                             KeyGenerator kg=KeyGenerator.getInstance("AES");
                             kg.init(128);
                             SecretKey sk=kg.generateKey();
@@ -93,6 +93,7 @@ public class AcceptClient extends Thread {
                             Cipher cipher = Cipher.getInstance("RSA");
                             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
                             byte[] EncryptedAES = cipher.doFinal(input);
+                            System.out.println("Conplete RSA Encryption");
 
                             //Base64 encoding
                             String secretKeyEncoded= Base64.getEncoder().encodeToString(EncryptedAES);
