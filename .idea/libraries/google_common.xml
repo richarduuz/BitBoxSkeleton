@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="google-common">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/Desktop/google-common.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
