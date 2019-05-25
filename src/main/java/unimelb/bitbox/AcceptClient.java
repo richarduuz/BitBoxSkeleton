@@ -93,7 +93,7 @@ public class AcceptClient extends Thread {
                             Cipher cipher = Cipher.getInstance("RSA");
                             cipher.init(Cipher.ENCRYPT_MODE, publicKey);
                             byte[] EncryptedAES = cipher.doFinal(input);
-                            System.out.println("Conplete RSA Encryption");
+                            System.out.println("Complete RSA Encryption");
 
                             //Base64 encoding
                             String secretKeyEncoded= Base64.getEncoder().encodeToString(EncryptedAES);
