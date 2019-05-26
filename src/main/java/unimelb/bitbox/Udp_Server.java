@@ -82,7 +82,7 @@ public class Udp_Server extends Thread{
                         JSONObject hostPortResponse = new JSONObject();
                         hostPortResponse.put("host", ServerMain.myhost);
                         hostPortResponse.put("port", ServerMain.udpPort);
-                        response.put("hostPort", hostPort);
+                        response.put("hostPort", hostPortResponse);
                         byte[] handshakeResponse = response.toJSONString().getBytes("UTF-8");
                         DatagramPacket peerResponse = new DatagramPacket(handshakeResponse, handshakeResponse.length, request.getAddress(), request.getPort());
                         UDPsocket.send(peerResponse);
