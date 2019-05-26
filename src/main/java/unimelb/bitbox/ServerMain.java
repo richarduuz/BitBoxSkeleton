@@ -9,20 +9,17 @@ import unimelb.bitbox.util.*;
 import unimelb.bitbox.util.FileSystemManager.FileSystemEvent;
 
 import java.io.*;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
 import javax.crypto.SecretKey;
 import javax.crypto.KeyGenerator;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 
 
 public class ServerMain extends Thread implements FileSystemObserver {
 	private static Logger log = Logger.getLogger(ServerMain.class.getName());
+	public static long udpPort = Long.parseLong(Configuration.getConfigurationValue("udpPort"));
 	public static FileSystemManager fileSystemManager;
 	public static final int maximumIncommingConnections = Integer.parseInt(Configuration.getConfigurationValue("maximumIncommingConnections"));
 	private int clientNumber = 0;
@@ -34,6 +31,10 @@ public class ServerMain extends Thread implements FileSystemObserver {
     private String mode = Configuration.getConfigurationValue("mode");
     public static final int maximumRetryNumbers = Integer.parseInt(Configuration.getConfigurationValue("maximumRetryNumber"));
 	public static int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
+	public static ArrayList<String[]> rememberPeer = new ArrayList<>();
+	public static ArrayList<String[]> onlinePeer = new ArrayList<>();
+	public static String myhost = Configuration.getConfigurationValue("advertisedName");
+
 
 
 	public ServerMain() throws NumberFormatException, IOException, NoSuchAlgorithmException {
@@ -116,25 +117,60 @@ public class ServerMain extends Thread implements FileSystemObserver {
 			// Start client
 			String[] peerPortInfo = Configuration.getConfigurationValue("peers").split(",");
 			long[] portInfor = new long[peerPortInfo.length];
+			String[] peerHostInfo = new String[peerPortInfo.length];
 			for (int i = 0; i < peerPortInfo.length; i++) {
 				portInfor[i] = Long.parseLong(peerPortInfo[i].split(":")[1]);
-
+				peerHostInfo[i] = peerPortInfo[i].split(":")[0];
 			}
-			String[] peerHostInfo = Configuration.getConfigurationValue("advertisedName").split(",");
-			try {
 
+			for (int i = 0; i < peerHostInfo.length; i++){
+				String host = peerHostInfo[i];
+				long peerPort = portInfor[i];
+				DatagramPacket handshakePacket = handshakePacket(host, peerPort);
+				UDPClient handshakeClient = new UDPClient("handshake",handshakePacket, "HANDSHAKE_REQUEST");
+				handshakeClient.start();
+				System.out.println("Starting handshake");
+			}
+
+
+			try {
+				sleep(1000);
 				while (true) {
 					if (tobeprocessed.size() > 0) {
 						System.out.println("Sending request for new event");
-//						eventList.add(tobeprocessed.poll());
-						for (int i = 0; i < peerHostInfo.length; i++) {
-							String host = peerHostInfo[i];
-							long port = portInfor[i];
-							if (i != peerHostInfo.length-1){
+//						for (int i = 0; i < peerHostInfo.length; i++) {
+//							String host = peerHostInfo[i];
+//							long port = portInfor[i];
+//							DatagramPacket handshakePacket = handshakePacket(host, port);
+//							UDPClient handshakeClient = new UDPClient("handshake",handshakePacket, "HANDSHAKE_REQUEST");
+//							handshakeClient.start();
+//						}
+//						for (String[] peer: rememberPeer){
+//							String host = peer[0];
+//							long port = Long.parseLong(peer[1]);
+//							DatagramPacket handshakePacket = handshakePacket(host, port);
+//							UDPClient handshakeClient = new UDPClient("handshake",handshakePacket, "HANDSHAKE_REQUEST");
+//							handshakeClient.start();
+//						}
+						for (String[] peer: rememberPeer){
+							boolean flag = false;
+							for (String[] peerInfo: ServerMain.onlinePeer){
+								if (peer[0].equals(peerInfo[0])){
+									flag = true;
+								}
+							}
+							if (!flag){
+								onlinePeer.add(peer);
+							}
+						}
+						for (int i = 0; i < onlinePeer.size(); i++){
+							String host = (onlinePeer.get(i))[0];
+							long port = Long.parseLong(onlinePeer.get(i)[1]);
+							if ((i != onlinePeer.size()-1)){
 								UDPClient udpClient = new UDPClient("client", host, port, tobeprocessed.element());
 								udpClient.start();
 							}
-							else{
+							else {
 								UDPClient udpClient = new UDPClient("client", host, port, tobeprocessed.poll());
 								udpClient.start();
 							}
@@ -157,6 +193,25 @@ public class ServerMain extends Thread implements FileSystemObserver {
 		tobeprocessed.offer(fileSystemEvent);
 		System.out.println("new event is formed");
 		System.out.println("event content: "+fileSystemEvent.toString()+"\n");
+	}
+
+	public DatagramPacket handshakePacket(String host, long port){
+		DatagramPacket packet = null;
+		try{
+			JSONObject handshake = new JSONObject();
+			handshake.put("command", "HANDSHAKE_REQUEST");
+			JSONObject hostPort = new JSONObject();
+			hostPort.put("host", myhost);
+			hostPort.put("port",udpPort);
+			handshake.put("hostPort", hostPort);
+			InetAddress address = InetAddress.getByName(host);
+			packet = new DatagramPacket(handshake.toJSONString().getBytes("UTF-8"), handshake.toJSONString().getBytes("UTF-8").length, address, (int)port);
+		}catch (UnsupportedEncodingException e){
+			e.printStackTrace();
+		}catch (UnknownHostException e){
+			e.printStackTrace();
+		}
+		return packet;
 	}
 
 	public static boolean handshakeProcedure(Socket socket,boolean isSpare) {
