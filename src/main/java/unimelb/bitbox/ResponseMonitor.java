@@ -23,6 +23,8 @@ public class ResponseMonitor extends Thread {
     private boolean isByteResponse = false;
     public boolean flag = false;
     private FileSystemManager.FileSystemEvent Event = null;
+    private String handshake = null;
+
 
     public ResponseMonitor(String str, DatagramSocket s, FileSystemManager.FileSystemEvent event) {
         ThreadName = str;
@@ -34,6 +36,13 @@ public class ResponseMonitor extends Thread {
         ThreadName = str;
         socket = s;
         isByteResponse = file_byte_request;
+
+    }
+
+    public ResponseMonitor(String name, DatagramSocket s, String str){
+        ThreadName = name;
+        socket = s;
+        handshake = str;
 
     }
 
@@ -70,55 +79,77 @@ public class ResponseMonitor extends Thread {
 
 
                 // Incoming message is not FILE_BYTE_REQUEST
-                if (!isByteResponse) {
-                    if (!peerResponse.get("command").equals("FILE_BYTES_REQUEST")){
-                        switch (Event.event) {
-                            case DIRECTORY_CREATE: {
-                                Expected_response = "DIRECTORY_CREATE_RESPONSE";
-                                break;
+                if (handshake == null) {
+                    if (!isByteResponse) {
+                        if (!peerResponse.get("command").equals("FILE_BYTES_REQUEST")) {
+                            switch (Event.event) {
+                                case DIRECTORY_CREATE: {
+                                    Expected_response = "DIRECTORY_CREATE_RESPONSE";
+                                    break;
+                                }
+                                case DIRECTORY_DELETE: {
+                                    Expected_response = "DIRECTORY_DELETE_RESPONSE";
+                                    break;
+                                }
+                                case FILE_DELETE: {
+                                    Expected_response = "FILE_CREATE_RESPONSE";
+                                    break;
+                                }
+                                case FILE_CREATE: {
+                                    Expected_response = "FILE_CREATE_RESPONSE";
+                                    break;
+                                }
+                                case FILE_MODIFY: {
+                                    Expected_response = "FILE_MODIFY_RESPONSE";
+                                    break;
+                                }
                             }
-                            case DIRECTORY_DELETE: {
-                                Expected_response = "DIRECTORY_DELETE_RESPONSE";
-                                break;
+                            if (peerResponse.get("command").equals(Expected_response)) {
+                                flag = true;
+                                System.out.println(Expected_response + " " + peerResponse.get("status"));
+                            } else {
+                                System.out.println("Invalid response");
                             }
-                            case FILE_DELETE: {
-                                Expected_response = "FILE_CREATE_RESPONSE";
-                                break;
-                            }
-                            case FILE_CREATE: {
-                                Expected_response = "FILE_CREATE_RESPONSE";
-                                break;
-                            }
-                            case FILE_MODIFY: {
-                                Expected_response = "FILE_MODIFY_RESPONSE";
-                                break;
-                            }
-                        }
-                        if (peerResponse.get("command").equals(Expected_response)) {
-                            flag = true;
-                            System.out.println(Expected_response + " " + peerResponse.get("status"));
                         } else {
-                            System.out.println("Invalid response");
+                            System.out.println("Receiving file byte request");
+                            processByteRequest(peerResponse, packet);
                         }
-                    }
-                    else{
+
+                    } else if (peerResponse.get("command").equals("FILE_BYTES_RESPONSE")) {
+                        flag = true;
+                        System.out.println("Receiving file byte response");
+                        processByteResponse(peerResponse, packet);
+                    } else if (peerResponse.get("command").equals("FILE_BYTES_REQUEST")) {
+                        flag = true;
                         System.out.println("Receiving file byte request");
                         processByteRequest(peerResponse, packet);
+                    } else {
+                        System.out.println("Invalid message");
                     }
-
                 }
-                else if (peerResponse.get("command").equals("FILE_BYTES_RESPONSE")){
-                    flag = true;
-                    System.out.println("Receiving file byte response");
-                    processByteResponse(peerResponse, packet);
-                }
-                else if (peerResponse.get("command").equals("FILE_BYTES_REQUEST")){
-                    flag = true;
-                    System.out.println("Receiving file byte request");
-                    processByteRequest(peerResponse, packet);
-                }
-                else{
-                    System.out.println("Invalid message");
+                else {
+                    if (peerResponse.get("command").equals("HANDSHAKE_RESPONSE")){
+                        System.out.println("receiving handshake response");
+                        flag = true;
+                        JSONObject hostPort = (JSONObject)peerResponse.get("hostPort");
+                        String host = packet.getAddress().toString();
+                        host = host.substring(host.lastIndexOf("/") + 1);
+                        String port = String.valueOf(hostPort.get("port"));
+                        String[] peer = new String[]{host, port};
+                        boolean exist = false;
+                        for (String[] peerInfo: ServerMain.onlinePeer){
+                            if (peerInfo[0].equals(host)){
+                                exist = true;
+                            }
+                        }
+                        if (!exist){
+                            ServerMain.onlinePeer.add(peer);
+                            System.out.println("Adding peer host: " + peer[0] + ", port: " + peer[1]);
+                        }
+                    }
+                    else if (peerResponse.get("command").equals("CONNECTION_REFUSED")){
+                        flag = true;
+                    }
                 }
                 sleep(1000);
             }
