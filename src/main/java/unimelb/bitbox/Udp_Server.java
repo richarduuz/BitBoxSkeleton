@@ -108,7 +108,6 @@ public class Udp_Server extends Thread{
                             case ("DIRECTORY_CREATE_REQUEST"): {
                                 JSONObject RESPONSE = new JSONObject();
                                 if (fileSystemManager.isSafePathName(path_Name) && !fileSystemManager.dirNameExists(path_Name)) {
-
                                     if (fileSystemManager.makeDirectory(path_Name)) {
                                         RESPONSE.put("message", "directory create successfully");
                                         RESPONSE.put("status", true);
@@ -123,6 +122,7 @@ public class Udp_Server extends Thread{
                                 peerResponse = new DatagramPacket(packet, packet.length, request.getAddress(), request.getPort());
                                 UDPsocket.send(peerResponse);
                                 System.out.println(request.getAddress() + ": " + request.getPort());
+                                break;
                             }
                             case ("DIRECTORY_DELETE_REQUEST"): {
                                 JSONObject RESPONSE = new JSONObject();
@@ -146,6 +146,7 @@ public class Udp_Server extends Thread{
                                 byte[] packet = RESPONSE.toJSONString().getBytes("UTF-8");
                                 peerResponse = new DatagramPacket(packet, packet.length, request.getAddress(), request.getPort());
                                 UDPsocket.send(peerResponse);
+                                break;
 
                             }
                         }
