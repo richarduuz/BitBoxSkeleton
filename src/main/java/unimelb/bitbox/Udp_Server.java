@@ -98,7 +98,7 @@ public class Udp_Server extends Thread{
                     }
 
                 }
-                else if (checkOnlinePeer(request)) {
+                else if (checkOnlinePeer(request)|checkRememberPeer(request)) {
 
                     // get parthName
                     String path_Name = (String) peerRequest.get("pathName");
