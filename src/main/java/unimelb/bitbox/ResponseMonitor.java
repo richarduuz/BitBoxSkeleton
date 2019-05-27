@@ -14,6 +14,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Base64;
 
 public class ResponseMonitor extends Thread {
@@ -145,7 +146,14 @@ public class ResponseMonitor extends Thread {
                         if (!exist){
                             ServerMain.onlinePeer.add(peer);
                             System.out.println("Adding peer host: " + peer[0] + ", port: " + peer[1]);
+                            ArrayList<FileSystemManager.FileSystemEvent> tobesynced = ServerMain.fileSystemManager.generateSyncEvents();
+                            for (FileSystemManager.FileSystemEvent event: tobesynced){
+                                UDPClient syncedClient = new UDPClient("syncedClient", peer[0], Long.parseLong(peer[1]), event);
+                                syncedClient.start();
+                            }
                         }
+
+
                     }
                     else if (peerResponse.get("command").equals("CONNECTION_REFUSED")){
                         flag = true;
