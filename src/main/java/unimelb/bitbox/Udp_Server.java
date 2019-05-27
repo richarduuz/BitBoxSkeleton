@@ -11,6 +11,7 @@ import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Base64;
 
 
@@ -76,7 +77,9 @@ public class Udp_Server extends Thread{
                         if (reachLimitedSize && !remenberedPeer){
                             String[] peerInfo = new String[]{host, port};
                             ServerMain.rememberPeer.add(peerInfo);
+
                         }
+
                         JSONObject response = new JSONObject();
                         response.put("command", "HANDSHAKE_RESPONSE");
                         JSONObject hostPortResponse = new JSONObject();
@@ -86,10 +89,16 @@ public class Udp_Server extends Thread{
                         byte[] handshakeResponse = response.toJSONString().getBytes("UTF-8");
                         DatagramPacket peerResponse = new DatagramPacket(handshakeResponse, handshakeResponse.length, request.getAddress(), request.getPort());
                         UDPsocket.send(peerResponse);
+
+                        ArrayList<FileSystemManager.FileSystemEvent> tobesynced = ServerMain.fileSystemManager.generateSyncEvents();
+                        for (FileSystemManager.FileSystemEvent event: tobesynced){
+                            UDPClient syncedClient = new UDPClient("syncedClient", host, Long.parseLong(port), event);
+                            syncedClient.start();
+                        }
                     }
 
                 }
-                else if (checkRememberPeer(request)) {
+                else if (checkOnlinePeer(request)) {
 
                     // get parthName
                     String path_Name = (String) peerRequest.get("pathName");
@@ -453,6 +462,18 @@ public class Udp_Server extends Thread{
         String host = packet.getAddress().toString();
         host = host.substring(host.lastIndexOf("/") + 1);
         for (String[] peer: ServerMain.rememberPeer){
+            if (peer[0].equals(host)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkOnlinePeer(DatagramPacket packet){
+
+        String host = packet.getAddress().toString();
+        host = host.substring(host.lastIndexOf("/") + 1);
+        for (String[] peer: ServerMain.onlinePeer){
             if (peer[0].equals(host)){
                 return true;
             }
