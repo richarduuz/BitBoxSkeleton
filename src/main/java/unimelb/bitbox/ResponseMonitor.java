@@ -93,7 +93,7 @@ public class ResponseMonitor extends Thread {
                                     break;
                                 }
                                 case FILE_DELETE: {
-                                    Expected_response = "FILE_CREATE_RESPONSE";
+                                    Expected_response = "FILE_DELETE_RESPONSE";
                                     break;
                                 }
                                 case FILE_CREATE: {
