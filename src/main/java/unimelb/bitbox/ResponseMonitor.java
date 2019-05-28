@@ -76,6 +76,7 @@ public class ResponseMonitor extends Thread {
                 JSONParser parser = new JSONParser();
                 String Expected_response = null;
                 peerResponse = (JSONObject) parser.parse(response);
+                System.out.println((String)peerResponse.get("command") + "on random port");
 
 
 
@@ -136,7 +137,7 @@ public class ResponseMonitor extends Thread {
                         String host = packet.getAddress().toString();
                         host = host.substring(host.lastIndexOf("/") + 1);
                         String port = String.valueOf(hostPort.get("port"));
-                        String[] peer = new String[]{host, port};
+                        String[] peer = new String[]{host, port, (String)hostPort.get("host")};
                         boolean exist = false;
                         for (String[] peerInfo: ServerMain.onlinePeer){
                             if (peerInfo[0].equals(host)){
