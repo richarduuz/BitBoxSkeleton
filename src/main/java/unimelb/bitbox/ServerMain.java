@@ -28,7 +28,7 @@ public class ServerMain extends Thread implements FileSystemObserver {
 	public static Map<Socket,String[]> peerSocket = new HashMap<>();
 	public static Queue<FileSystemEvent> tobeprocessed = new LinkedList<FileSystemEvent>();
 	public static ArrayList<String[]> connectedPeerInfo=new ArrayList<>();//[0] host, [1] port
-    private String mode = Configuration.getConfigurationValue("mode");
+    public static String mode = Configuration.getConfigurationValue("mode");
     public static final int maximumRetryNumbers = Integer.parseInt(Configuration.getConfigurationValue("maximumRetryNumber"));
 	public static int blockSize = Integer.parseInt(Configuration.getConfigurationValue("blockSize"));
 	public static ArrayList<String[]> rememberPeer = new ArrayList<>();
@@ -105,6 +105,12 @@ public class ServerMain extends Thread implements FileSystemObserver {
 			}
 			// UDP Process
 			fileSystemManager = new FileSystemManager(Configuration.getConfigurationValue("path"), this);
+			ServerSocket clientSocket = new ServerSocket(Integer.parseInt(Configuration.getConfigurationValue("clientPort")));
+
+			///start a therad to listening the client port///
+			AcceptClient clientConnection = new AcceptClient("listening client", clientSocket);
+			clientConnection.start();
+			///finish///
 			long UDP_Port = Long.parseLong(Configuration.getConfigurationValue("udpPort"));
 
 			DatagramSocket socket = new DatagramSocket((int) UDP_Port);
@@ -123,10 +129,13 @@ public class ServerMain extends Thread implements FileSystemObserver {
 				peerHostInfo[i] = peerPortInfo[i].split(":")[0];
 			}
 
+			// handshake
+
 			for (int i = 0; i < peerHostInfo.length; i++){
 				String host = peerHostInfo[i];
 				long peerPort = portInfor[i];
 				DatagramPacket handshakePacket = handshakePacket(host, peerPort);
+				System.out.println("host: " + host + " port: " + peerPort);
 				UDPClient handshakeClient = new UDPClient("handshake",handshakePacket, "HANDSHAKE_REQUEST");
 				handshakeClient.start();
 				System.out.println("Starting handshake");
@@ -152,17 +161,17 @@ public class ServerMain extends Thread implements FileSystemObserver {
 //							UDPClient handshakeClient = new UDPClient("handshake",handshakePacket, "HANDSHAKE_REQUEST");
 //							handshakeClient.start();
 //						}
-						for (String[] peer: rememberPeer){
-							boolean flag = false;
-							for (String[] peerInfo: ServerMain.onlinePeer){
-								if (peer[0].equals(peerInfo[0])){
-									flag = true;
-								}
-							}
-							if (!flag){
-								onlinePeer.add(peer);
-							}
-						}
+//						for (String[] peer: rememberPeer){
+//							boolean flag = false;
+//							for (String[] peerInfo: ServerMain.onlinePeer){
+//								if (peer[0].equals(peerInfo[0])){
+//									flag = true;
+//								}
+//							}
+//							if (!flag){
+//								onlinePeer.add(peer);
+//							}
+//						}
 						for (int i = 0; i < onlinePeer.size(); i++){
 							String host = (onlinePeer.get(i))[0];
 							long port = Long.parseLong(onlinePeer.get(i)[1]);
@@ -195,7 +204,7 @@ public class ServerMain extends Thread implements FileSystemObserver {
 		System.out.println("event content: "+fileSystemEvent.toString()+"\n");
 	}
 
-	public DatagramPacket handshakePacket(String host, long port){
+	public static DatagramPacket handshakePacket(String host, long port){
 		DatagramPacket packet = null;
 		try{
 			JSONObject handshake = new JSONObject();

@@ -65,7 +65,7 @@ public class Udp_Server extends Thread{
 //                String path_Name = "share/"+path+Name;
 
                 String command = (String)peerRequest.get("command");
-                System.out.println(command);
+                System.out.println(command + "On udp port");
                 if (command.equals("HANDSHAKE_REQUEST")){
                     JSONObject hostPort = (JSONObject)peerRequest.get("hostPort");
                     String host = request.getAddress().toString();
@@ -75,8 +75,11 @@ public class Udp_Server extends Thread{
                     boolean remenberedPeer = checkRememberPeer(request);
                     if (reachLimitedSize | remenberedPeer){
                         if (reachLimitedSize && !remenberedPeer){
-                            String[] peerInfo = new String[]{host, port};
+                            String[] peerInfo = new String[]{host, port, (String)hostPort.get("host")};
                             ServerMain.rememberPeer.add(peerInfo);
+                            if (!checkOnlinePeer(request)){
+                                ServerMain.onlinePeer.add(peerInfo);
+                            }
 
                         }
 
@@ -98,7 +101,7 @@ public class Udp_Server extends Thread{
                     }
 
                 }
-                else if (checkOnlinePeer(request)|checkRememberPeer(request)) {
+                else if (checkOnlinePeer(request)) {
 
                     // get parthName
                     String path_Name = (String) peerRequest.get("pathName");
