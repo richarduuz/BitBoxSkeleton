@@ -29,7 +29,6 @@ public class ClientMonitor extends Thread {
     private String ThreadName;
     private Thread t;
     private Socket clientSocket;
-    private  boolean flag = false;
 
     ClientMonitor(String name,Socket socket, SecretKey key)
     {
@@ -101,20 +100,34 @@ public class ClientMonitor extends Thread {
             String client_command = (String)js.get("command");
             JSONObject Response = new JSONObject();
             JSONObject payload = new JSONObject();
+            boolean exist = false;
             switch (client_command){
                 case ("LIST_PEERS_REQUEST"):
                 {
                     System.out.println("Recieve list peers request from client");
                     ArrayList<String[]> connected_peer = ServerMain.connectedPeerInfo;
                     JSONArray peer = new JSONArray();
-                    for (Socket key: ServerMain.peerSocket.keySet()){
-                        JSONObject tobeAdd = new JSONObject();
-                        tobeAdd.put("host", ServerMain.peerSocket.get(key)[0]);
-                        tobeAdd.put("port", Long.parseLong(ServerMain.peerSocket.get(key)[1]));
-                        peer.add(tobeAdd);
+                    if (ServerMain.mode.equals("tcp")){
+                        for (Socket key: ServerMain.peerSocket.keySet()){
+                            JSONObject tobeAdd = new JSONObject();
+                            tobeAdd.put("host", ServerMain.peerSocket.get(key)[0]);
+                            tobeAdd.put("port", Long.parseLong(ServerMain.peerSocket.get(key)[1]));
+                            peer.add(tobeAdd);
+                        }
+                        Response.put("command", "LIST_PEERS_RESPONSE");
+                        Response.put("peers", peer);
                     }
-                    Response.put("command", "LIST_PEERS_RESPONSE");
-                    Response.put("peers", peer);
+                    else{
+                        for(String[] connectedPeer: ServerMain.onlinePeer){
+                            JSONObject tobeAdd = new JSONObject();
+                            tobeAdd.put("host", connectedPeer[0]);
+                            tobeAdd.put("port", Long.parseLong(connectedPeer[1]));
+                            peer.add(tobeAdd);
+                        }
+                        Response.put("command", "LIST_PEERS_RESPONSE");
+                        Response.put("peers", peer);
+
+                    }
                     payload.put("payload", generate_payload(Response, sk));
                     out.write(payload.toJSONString() + '\n');
                     out.flush();
@@ -133,17 +146,40 @@ public class ClientMonitor extends Thread {
                     Response.put("host", host);
                     Response.put("port", port);
                     sleep(1000);
-                    System.out.println("size: " + ServerMain.connectedPeerInfo.size());
-                    for (Socket key: ServerMain.peerSocket.keySet()){
-                        if (ServerMain.peerSocket.get(key)[0].equals(host) && Long.parseLong(ServerMain.peerSocket.get(key)[1]) == port){
-                            flag = true;
+                    if (ServerMain.mode.equals("tcp")){
+                        for (Socket key: ServerMain.peerSocket.keySet()){
+                            if (ServerMain.peerSocket.get(key)[0].equals(host) && Long.parseLong(ServerMain.peerSocket.get(key)[1]) == port){
+                                exist = true;
+                                Response.put("status", true);
+                                Response.put("message", "connected to peer");
+                            }
+                        }
+                        if (!exist){
+                            Response.put("status", false);
+                            Response.put("message", "connection fail");
+                        }
+                    }
+                    else{
+                        if (!exist){
+                            UDPClient connecting = new UDPClient("connect", ServerMain.handshakePacket(host, port), "HANDSHAKE_REQUEST");
+                            connecting.start();
+                            sleep(1000);
+                            for(String[] connectedPeer: ServerMain.onlinePeer ){
+                                if ((connectedPeer[0].equals(host)|connectedPeer[2].equals(host))&&Long.parseLong(connectedPeer[1])==port){
+                                    exist = true;
+                                }
+                            }
+                        }
+                        if (exist){
                             Response.put("status", true);
                             Response.put("message", "connected to peer");
                         }
-                    }
-                    if (!flag){
-                        Response.put("status", false);
-                        Response.put("message", "connection fail");
+                        else{
+                            Response.put("status", false);
+                            Response.put("message", "connection fail");
+                        }
+
+
                     }
                     payload.put("payload", generate_payload(Response, sk));
                     out.write(payload.toJSONString() + '\n');
@@ -160,18 +196,67 @@ public class ClientMonitor extends Thread {
                     Response.put("command", "DISCONNECT_PEER_RESPONSE");
                     Response.put("host", host);
                     Response.put("port", port);
-                    for (Socket key: ServerMain.peerSocket.keySet()){
-                        if (ServerMain.peerSocket.get(key)[0].equals(host) && Long.parseLong(ServerMain.peerSocket.get(key)[1]) == port){
-                            key.close();
-                            flag = true;
+                    if (ServerMain.mode.equals("tcp")){
+                        for (Socket key: ServerMain.peerSocket.keySet()){
+                            if (ServerMain.peerSocket.get(key)[0].equals(host) && Long.parseLong(ServerMain.peerSocket.get(key)[1]) == port){
+                                key.close();
+                                exist = true;
+                                Response.put("status", true);
+                                Response.put("message", "disconnect from peer");
+                            }
+                        }
+                        if (!exist){
+                            Response.put("status", false);
+                            Response.put("message", "connection not active");
+                        }
+                    }
+                    else{
+                        ArrayList<String> temp = new ArrayList<>();
+                        for (int i = 0; i < ServerMain.onlinePeer.size(); i++){
+                            if ((ServerMain.onlinePeer.get(i)[0].equals(host)|ServerMain.onlinePeer.get(i)[2].equals(host))&&Long.parseLong(ServerMain.onlinePeer.get(i)[1])==port){
+                                temp.add(String.valueOf(i));
+                                exist = true;
+                            }
+                        }
+                        for (String str: temp){
+                            ServerMain.onlinePeer.remove(ServerMain.onlinePeer.get(Integer.parseInt(str)));
+                        }
+                        temp.clear();
+//                        for(String[] connectedPeer: ServerMain.onlinePeer ){
+//                            if ((connectedPeer[0].equals(host)|connectedPeer[2].equals(host))&&Long.parseLong(connectedPeer[1])==port){
+//                                ServerMain.onlinePeer.remove(connectedPeer);
+//                                exist = true;
+//                            }
+//                        }
+                        for (int i = 0; i < ServerMain.rememberPeer.size(); i++){
+                            if ((ServerMain.rememberPeer.get(i)[0].equals(host)|ServerMain.rememberPeer.get(i)[2].equals(host))&&Long.parseLong(ServerMain.rememberPeer.get(i)[1])==port){
+                                temp.add(String.valueOf(i));
+                                exist = true;
+                            }
+                        }
+                        for (String str: temp){
+                            ServerMain.rememberPeer.remove(ServerMain.rememberPeer.get(Integer.parseInt(str)));
+                        }
+                        temp.clear();
+
+//                        for (String[] remember: ServerMain.rememberPeer){
+//                            if ((remember[0].equals(host)|remember[2].equals(host))&&Long.parseLong(remember[1])==port){
+//                                ServerMain.rememberPeer.remove(remember);
+//                                exist = true;
+//                            }
+//                        }
+
+                        if (exist){
                             Response.put("status", true);
                             Response.put("message", "disconnect from peer");
                         }
+                        else{
+                            Response.put("status", false);
+                            Response.put("message", "connection not active");
+                        }
+
                     }
-                    if (!flag){
-                        Response.put("status", false);
-                        Response.put("message", "connection not active");
-                    }
+
                     payload.put("payload", generate_payload(Response, sk));
                     out.write(payload.toJSONString() + '\n');
                     out.flush();
@@ -189,7 +274,6 @@ public class ClientMonitor extends Thread {
                     payload.put("payload", generate_payload(Response, sk));
                     out.write(payload.toJSONString() + '\n');
                     out.flush();
-
                     clientSocket.close();
                 }
             }
