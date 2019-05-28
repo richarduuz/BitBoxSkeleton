@@ -190,7 +190,7 @@ public class ServerMain extends Thread implements FileSystemObserver {
 				}
 
 			}catch (InterruptedException e){
-
+			    e.printStackTrace();
 			}
 		}
 
