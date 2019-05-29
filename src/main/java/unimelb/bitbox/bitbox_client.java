@@ -1,5 +1,6 @@
 package unimelb.bitbox;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -22,6 +23,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Iterator;
 
 public class bitbox_client {
 
@@ -124,7 +126,22 @@ public class bitbox_client {
                 byte[] decryptedResponse = decrypt.doFinal(encryptedResponse);
                 JSONObject serverResponse = (JSONObject)JsParser.parse(new String(decryptedResponse, "UTF-8"));
                 System.out.println(serverResponse.get("command"));
-                System.out.println(serverResponse.get("message"));
+                String serverCommand = (String)serverResponse.get("command");
+                if (serverCommand.equals("CONNECT_PEER_RESPONSE") | serverCommand.equals("DISCONNECT_PEER_RESPONSE")){
+                    System.out.println(serverResponse.get("message"));
+                }
+                else if(serverCommand.equals("LIST_PEERS_RESPONSE")){
+                    JSONArray peers = (JSONArray)serverResponse.get("peers");
+                    Iterator<JSONObject> peer = peers.iterator();
+                    int count = 1;
+                    while (peer.hasNext()){
+                        JSONObject list_peer = (JSONObject)peer.next();
+                        System.out.println("showing the connected peer " + count);
+                        System.out.println("host: " + (String)list_peer.get("host"));
+                        System.out.println("port: " + String.valueOf((long)list_peer.get("port")));
+                        count += 1;
+                    }
+                }
 
             }
 
