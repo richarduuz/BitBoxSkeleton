@@ -145,7 +145,7 @@ public class ServerMain extends Thread implements FileSystemObserver {
 			try {
 				sleep(1000);
 				while (true) {
-					if (tobeprocessed.size() > 0) {
+					if (tobeprocessed.size() > 0 && onlinePeer.size()>0) {
 						System.out.println("Sending request for new event");
 //						for (int i = 0; i < peerHostInfo.length; i++) {
 //							String host = peerHostInfo[i];
