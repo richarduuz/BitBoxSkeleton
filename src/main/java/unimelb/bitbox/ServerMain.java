@@ -34,6 +34,7 @@ public class ServerMain extends Thread implements FileSystemObserver {
 	public static ArrayList<String[]> rememberPeer = new ArrayList<>();
 	public static ArrayList<String[]> onlinePeer = new ArrayList<>();
 	public static String myhost = Configuration.getConfigurationValue("advertisedName");
+	public static int TimeOutPeriod = Integer.parseInt(Configuration.getConfigurationValue("timeoutPeriod"));
 
 
 
