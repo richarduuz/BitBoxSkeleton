@@ -111,8 +111,7 @@ public class ResponseMonitor extends Thread {
                             }
                             if (peerResponse.get("command").equals(Expected_response)) {
                                 flag = true;
-                                System.out.println(Expected_response + ": " + peerResponse.get("status"));
-                                System.out.println(peerResponse.get("message"));
+                                System.out.println(Expected_response + ": " + peerResponse.get("status") + ", MESSAGE: " + peerResponse.get("message"));
                             } else {
                                 System.out.println("Invalid response");
                             }

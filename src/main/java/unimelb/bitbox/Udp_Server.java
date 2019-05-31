@@ -41,9 +41,8 @@ public class Udp_Server extends Thread{
             while(true){
                 byte[] buffer = new byte[2*ServerMain.blockSize];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
-                System.out.println("Server is ready");
+                System.out.println("Server is ready for incoming message");
                 UDPsocket.receive(request);
-                System.out.println("read");
                 JSONObject peerRequest = new JSONObject();
                 JSONParser parser = new JSONParser();
                 String temp = new String(buffer, 0, request.getLength(), "UTF-8");
@@ -66,7 +65,7 @@ public class Udp_Server extends Thread{
 //                String path_Name = "share/"+path+Name;
 
                 String command = (String)peerRequest.get("command");
-                System.out.println(command + " on udp port");
+                System.out.println("Receeving " + command + " on udp port");
                 if (command.equals("HANDSHAKE_REQUEST")){
                     JSONObject hostPort = (JSONObject)peerRequest.get("hostPort");
                     String host = request.getAddress().toString();
@@ -132,7 +131,6 @@ public class Udp_Server extends Thread{
                                 byte[] packet = RESPONSE.toJSONString().getBytes("UTF-8");
                                 peerResponse = new DatagramPacket(packet, packet.length, request.getAddress(), request.getPort());
                                 UDPsocket.send(peerResponse);
-                                System.out.println(request.getAddress() + ": " + request.getPort());
                                 break;
                             }
                             case ("DIRECTORY_DELETE_REQUEST"): {
