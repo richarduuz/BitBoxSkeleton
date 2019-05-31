@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Timer;
 
 
 public class Udp_Server extends Thread{
@@ -38,7 +39,7 @@ public class Udp_Server extends Thread{
     public void run(){
         try{
             while(true){
-                byte[] buffer = new byte[ServerMain.blockSize];
+                byte[] buffer = new byte[2*ServerMain.blockSize];
                 DatagramPacket request = new DatagramPacket(buffer, buffer.length);
                 System.out.println("Server is ready");
                 UDPsocket.receive(request);
@@ -65,7 +66,7 @@ public class Udp_Server extends Thread{
 //                String path_Name = "share/"+path+Name;
 
                 String command = (String)peerRequest.get("command");
-                System.out.println(command + "On udp port");
+                System.out.println(command + " on udp port");
                 if (command.equals("HANDSHAKE_REQUEST")){
                     JSONObject hostPort = (JSONObject)peerRequest.get("hostPort");
                     String host = request.getAddress().toString();
@@ -98,6 +99,9 @@ public class Udp_Server extends Thread{
                             UDPClient syncedClient = new UDPClient("syncedClient", host, Long.parseLong(port), event);
                             syncedClient.start();
                         }
+                        Timer t = new Timer();
+                        SyncAllPeer syncClient = new SyncAllPeer(host, port);
+                        t.schedule(syncClient, 0, 60000);
                     }
 
                 }
@@ -115,7 +119,11 @@ public class Udp_Server extends Thread{
                                         RESPONSE.put("message", "directory create successfully");
                                         RESPONSE.put("status", true);
                                     }
-                                } else {
+                                }else if(fileSystemManager.dirNameExists(path_Name)){
+                                    RESPONSE.put("message", "pathname already exist");
+                                    RESPONSE.put("status", false);
+                                }
+                                else {
                                     RESPONSE.put("message", "fail to create directory");
                                     RESPONSE.put("status", false);
                                 }
@@ -455,6 +463,7 @@ public class Udp_Server extends Thread{
 
         }catch (NoSuchAlgorithmException e){
             // TODO process NOSuchAlgorithm Exception
+            e.printStackTrace();
         }
 
 

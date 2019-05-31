@@ -61,31 +61,25 @@ public class UDPClient extends Thread{
                     peerRequest = request.toJSONString().getBytes("UTF-8");
                     InetAddress address = InetAddress.getByName(host);
                     packet =  new DatagramPacket(peerRequest, peerRequest.length, address, (int)port);
+                    monitor = new ResponseMonitor("monitor",  socket, event);
+                    monitor.start();
                     socket.send(packet);
                     System.out.println("Sending request to udp peer");
 
                 }
                 else {
+                    monitor = new ResponseMonitor("monitor",  socket, true);
+                    monitor.start();
                     socket.send(bytePacket);
                 }
 
 
-                // create a monitor to check response
-
-                if (!IsByteRequest){
-                    monitor = new ResponseMonitor("monitor",  socket, event);
-                    monitor.start();
-                }
-                else{
-                    monitor = new ResponseMonitor("monitor",  socket, true);
-                    monitor.start();
-
-                }
             }
             else{
-                socket.send(bytePacket);
                 monitor = new ResponseMonitor("monitor",  socket, handshake);
                 monitor.start();
+                socket.send(bytePacket);
+
             }
 
 
@@ -94,7 +88,7 @@ public class UDPClient extends Thread{
 
             while(retry <= ServerMain.maximumRetryNumbers){
                 // timeout period : 6s (it should be 60s)
-                sleep(60000);
+                sleep(ServerMain.TimeOutPeriod*1000);
                 if (!monitor.flag){
                     System.out.println("no response");
                     if (IsByteRequest | handshake != null){

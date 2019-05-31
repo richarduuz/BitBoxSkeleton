@@ -82,7 +82,9 @@ public class bitbox_client {
                 //Base64 decoding
                 byte[] temp = Base64.getDecoder().decode(Base64AES);
                 //RSA Decryption
-                PrivateKey privateKey = generatePrivateKey("C:/Users/QT/.ssh/newkey");
+                PrivateKey privateKey = generatePrivateKey(System.getProperty("user.dir") + "/newkey");
+//                System.out.println(System.getProperty("bitbox_client.java"
+
                 Cipher RSAcipher = Cipher.getInstance("RSA");
                 RSAcipher.init(Cipher.DECRYPT_MODE, privateKey);
                 byte[] aes128 = RSAcipher.doFinal(temp);
@@ -134,12 +136,16 @@ public class bitbox_client {
                     JSONArray peers = (JSONArray)serverResponse.get("peers");
                     Iterator<JSONObject> peer = peers.iterator();
                     int count = 1;
+
                     while (peer.hasNext()){
                         JSONObject list_peer = (JSONObject)peer.next();
                         System.out.println("showing the connected peer " + count);
                         System.out.println("host: " + (String)list_peer.get("host"));
                         System.out.println("port: " + String.valueOf((long)list_peer.get("port")));
                         count += 1;
+                    }
+                    if (count == 1){
+                        System.out.println("This peer does not connect to any peer");
                     }
                 }
 
@@ -151,12 +157,15 @@ public class bitbox_client {
 
         }catch (CmdLineException e){
             // TODO process CmdLine exception
+            e.printStackTrace();
         }catch (UnknownHostException e){
             // TODO process unknown host exception
+            e.printStackTrace();
         }catch (IOException e){
             // TODO process IO exception
+            e.printStackTrace();
         }catch (ParseException e){
-            // TODO process parser exception
+            // TODO process parser exception4e
         }catch (NoSuchAlgorithmException e){
             //TODO process no such algorithm exception
         }catch (NoSuchPaddingException e){

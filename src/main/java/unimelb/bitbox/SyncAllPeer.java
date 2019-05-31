@@ -11,27 +11,23 @@ import java.util.TimerTask;
 
 public class SyncAllPeer extends TimerTask {
     private FileSystemManager fileSystemManager= ServerMain.fileSystemManager;
-    private Socket peerSocket;
+    private String host;
+    private String port;
 
-    public SyncAllPeer(Socket peer)
+    public SyncAllPeer(String peerHost, String peerPort)
     {
-        peerSocket=peer;
+        host = peerHost;
+        port = peerPort;
     }
+
 
     @Override
     public void run()
     {
-        try {
-            ArrayList<FileSystemManager.FileSystemEvent> tobeSynced=fileSystemManager.generateSyncEvents();
-            for (FileSystemManager.FileSystemEvent event:tobeSynced){
-                testClient client=new testClient("client"+peerSocket.toString(),peerSocket,fileSystemManager,event);
-                client.start();
-            }
-        }catch (IOException e)
-        {
-            e.printStackTrace();
-        }catch (NoSuchAlgorithmException e){
-            e.printStackTrace();
+        ArrayList<FileSystemManager.FileSystemEvent> tobeSynced=fileSystemManager.generateSyncEvents();
+        for (FileSystemManager.FileSystemEvent event:tobeSynced) {
+            UDPClient client = new UDPClient("client", host, Long.parseLong(port), event);
+            client.start();
         }
     }
 }
