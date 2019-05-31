@@ -16,6 +16,7 @@ import java.nio.ByteBuffer;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Timer;
 
 public class ResponseMonitor extends Thread {
     private String ThreadName;
@@ -56,6 +57,8 @@ public class ResponseMonitor extends Thread {
 
     public void run() {
         try {
+            String host = null;
+            String port = null;
             while (true) {
                 byte[] newbuffer = new byte[2*ServerMain.blockSize];
                 DatagramPacket packet = new DatagramPacket(newbuffer, newbuffer.length);
@@ -76,7 +79,7 @@ public class ResponseMonitor extends Thread {
                 JSONParser parser = new JSONParser();
                 String Expected_response = null;
                 peerResponse = (JSONObject) parser.parse(response);
-                System.out.println((String)peerResponse.get("command") + "on random port");
+                System.out.println((String)peerResponse.get("command") + " on random port");
 
 
 
@@ -108,11 +111,13 @@ public class ResponseMonitor extends Thread {
                             }
                             if (peerResponse.get("command").equals(Expected_response)) {
                                 flag = true;
-                                System.out.println(Expected_response + " " + peerResponse.get("status"));
+                                System.out.println(Expected_response + ": " + peerResponse.get("status"));
+                                System.out.println(peerResponse.get("message"));
                             } else {
                                 System.out.println("Invalid response");
                             }
                         } else {
+                            System.out.println(peerResponse.get("command"));
                             System.out.println("Receiving file byte request");
                             processByteRequest(peerResponse, packet);
                         }
@@ -134,9 +139,9 @@ public class ResponseMonitor extends Thread {
                         System.out.println("receiving handshake response");
                         flag = true;
                         JSONObject hostPort = (JSONObject)peerResponse.get("hostPort");
-                        String host = packet.getAddress().toString();
+                        host = packet.getAddress().toString();
                         host = host.substring(host.lastIndexOf("/") + 1);
-                        String port = String.valueOf(hostPort.get("port"));
+                        port = String.valueOf(hostPort.get("port"));
                         String[] peer = new String[]{host, port, (String)hostPort.get("host")};
                         boolean exist = false;
                         for (String[] peerInfo: ServerMain.onlinePeer){
@@ -152,6 +157,9 @@ public class ResponseMonitor extends Thread {
                                 UDPClient syncedClient = new UDPClient("syncedClient", peer[0], Long.parseLong(peer[1]), event);
                                 syncedClient.start();
                             }
+                            Timer t = new Timer();
+                            SyncAllPeer syncClient = new SyncAllPeer(host, port);
+                            t.schedule(syncClient, 0, 60000);
                         }
 
 
@@ -162,6 +170,9 @@ public class ResponseMonitor extends Thread {
                 }
                 sleep(1000);
             }
+
+
+
         } catch (IOException e) {
             // TODO process IOException
             e.printStackTrace();
@@ -244,8 +255,8 @@ public class ResponseMonitor extends Thread {
                             RESPONSE.put("fileDescriptor", description);
                             RESPONSE.put("pathName", path_Name);
                             RESPONSE.put("position", position + length);
-                            if ((int) (fileSize - (position + length)) > ServerMain.blockSize) {
-                                RESPONSE.put("length", (long)ServerMain.blockSize);
+                            if ((int) (fileSize - (position + length)) > ServerMain.blockSize/2) {
+                                RESPONSE.put("length", (long)ServerMain.blockSize/2);
                             } else {
                                 RESPONSE.put("length", fileSize - position - length);
                             }
