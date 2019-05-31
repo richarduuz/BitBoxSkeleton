@@ -17,6 +17,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.KeyGenerator;
 
 
+
 public class ServerMain extends Thread implements FileSystemObserver {
 	private static Logger log = Logger.getLogger(ServerMain.class.getName());
 	public static long udpPort = Long.parseLong(Configuration.getConfigurationValue("udpPort"));
@@ -35,6 +36,7 @@ public class ServerMain extends Thread implements FileSystemObserver {
 	public static ArrayList<String[]> onlinePeer = new ArrayList<>();
 	public static String myhost = Configuration.getConfigurationValue("advertisedName");
 	public static int TimeOutPeriod = Integer.parseInt(Configuration.getConfigurationValue("timeoutPeriod"));
+	public static int syncInterval = Integer.parseInt(Configuration.getConfigurationValue("syncInterval"));
 
 
 

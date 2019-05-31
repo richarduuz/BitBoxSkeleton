@@ -159,7 +159,7 @@ public class ResponseMonitor extends Thread {
                             }
                             Timer t = new Timer();
                             SyncAllPeer syncClient = new SyncAllPeer(host, port);
-                            t.schedule(syncClient, 0, 60000);
+                            t.schedule(syncClient, 0, ServerMain.syncInterval*1000);
                         }
 
 
