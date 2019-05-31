@@ -1,6 +1,5 @@
 package unimelb.bitbox;
 
-import com.sun.security.ntlm.Server;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -13,8 +12,6 @@ import java.net.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.logging.Logger;
-import javax.crypto.SecretKey;
-import javax.crypto.KeyGenerator;
 
 
 

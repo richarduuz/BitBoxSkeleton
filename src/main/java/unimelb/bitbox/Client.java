@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Iterator;
 
-public class bitbox_client {
+public class Client {
 
     public static void main(String[] args){
         //Object that will store the parsed command line arguments

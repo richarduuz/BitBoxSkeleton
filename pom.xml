@@ -22,6 +22,54 @@
 	    <artifactId>json-simple</artifactId>
 	    <version>1.1.1</version>
 	</dependency>
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j-2.33</artifactId>
+      <version>2.33</version>
+    </dependency>
+    <dependency>
+      <groupId>google-common</groupId>
+      <artifactId>google-common</artifactId>
+      <version>1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>guava</groupId>
+      <artifactId>guava-15.0</artifactId>
+      <version>15.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons.io</groupId>
+      <artifactId>org.apache.commons.io</artifactId>
+      <version>1.0</version>
+    </dependency>
+     <!--<dependency>-->
+          <!--<groupId>args4j-2.33</groupId>-->
+          <!--<artifactId>args4j-2.33</artifactId>-->
+          <!--<version>2.33</version>-->
+          <!--&lt;!&ndash;<scope>system</scope>&ndash;&gt;-->
+          <!--&lt;!&ndash;<systemPath>${basedir}/src/lib/args4j-2.33.jar</systemPath>&ndash;&gt;-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+          <!--<groupId>google-common</groupId>-->
+          <!--<artifactId>google-common</artifactId>-->
+          <!--<version>1.0</version>-->
+          <!--<scope>system</scope>-->
+          <!--<systemPath>${basedir}/src/lib/google-common.jar</systemPath>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+          <!--<groupId>guava-15.0-rc1</groupId>-->
+          <!--<artifactId>guava-15.0-rc1</artifactId>-->
+          <!--<version>15.0</version>-->
+          <!--<scope>system</scope>-->
+          <!--<systemPath>${basedir}/src/lib/guava-15.0-rc1.jar</systemPath>-->
+      <!--</dependency>-->
+      <!--<dependency>-->
+          <!--<groupId>org.apache.commons.io</groupId>-->
+          <!--<artifactId>org.apache.commons.io</artifactId>-->
+          <!--<version>1.0</version>-->
+          <!--<scope>system</scope>-->
+          <!--<systemPath>${basedir}/src/lib/org.apache.commons.io.jar</systemPath>-->
+      <!--</dependency>-->
   </dependencies>
   
   <build>

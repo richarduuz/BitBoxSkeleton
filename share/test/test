@@ -1,0 +1,10 @@
+
+
+{
+	"command":"DIRECTORY_CREATION_REQUEST",
+	"pathName":"dir/subdir/ext",
+}
+
+{
+	"command":""
+
