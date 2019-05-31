@@ -186,6 +186,9 @@ public class ServerMain extends Thread implements FileSystemObserver {
 						}
 
 					}
+					else{
+						tobeprocessed.clear();
+					}
 					sleep(1000);
 				}
 

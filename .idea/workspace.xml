@@ -2,24 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="90e4ab7d-54e0-4f0c-979c-e6ea5f4c6316" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/args4j_2_33.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/libraries/org_apache_commons_io.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/unimelb/bitbox/bitbox_client.java" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/target/bitbox-0.0.1-SNAPSHOT-jar-with-dependencies.jar" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/bitbox-0.0.1-SNAPSHOT.jar" afterPath="$PROJECT_DIR$/target/bitbox-0.0.1-SNAPSHOT.jar" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/unimelb/bitbox/ServerMain.class" afterPath="$PROJECT_DIR$/target/classes/unimelb/bitbox/ServerMain.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/unimelb/bitbox/SyncAllPeer.class" afterPath="$PROJECT_DIR$/target/classes/unimelb/bitbox/SyncAllPeer.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/unimelb/bitbox/acceptConnection.class" afterPath="$PROJECT_DIR$/target/classes/unimelb/bitbox/acceptConnection.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/classes/unimelb/bitbox/util/testClient.class" afterPath="$PROJECT_DIR$/target/classes/unimelb/bitbox/util/testClient.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/compiler.xml" afterPath="$PROJECT_DIR$/.idea/compiler.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/google_common.xml" afterPath="$PROJECT_DIR$/.idea/libraries/google_common.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/libraries/guava_15_0_rc1.xml" afterPath="$PROJECT_DIR$/.idea/libraries/guava_15_0_rc1.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/unimelb/bitbox/ServerMain.java" afterPath="$PROJECT_DIR$/src/main/java/unimelb/bitbox/ServerMain.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/configuration.properties" afterPath="$PROJECT_DIR$/target/configuration.properties" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" />
     </list>
     <ignored path="$PROJECT_DIR$/target/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -86,11 +69,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ServerMain.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ServerMain.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/unimelb/bitbox/ServerMain.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-173">
-              <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
+            <state relative-caret-position="119">
+              <caret line="189" column="46" lean-forward="true" selection-start-line="189" selection-start-column="46" selection-end-line="189" selection-end-column="46" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -118,7 +101,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="configuration.properties" pinned="false" current-in-tab="true">
+      <file leaf-file-name="configuration.properties" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/configuration.properties">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="0">
@@ -162,8 +145,8 @@
         <option value="$PROJECT_DIR$/src/main/java/unimelb/bitbox/bitbox_client.java" />
         <option value="$PROJECT_DIR$/src/main/java/unimelb/bitbox/ClientMonitor.java" />
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/src/main/java/unimelb/bitbox/ServerMain.java" />
         <option value="$PROJECT_DIR$/src/main/java/unimelb/bitbox/Client.java" />
+        <option value="$PROJECT_DIR$/src/main/java/unimelb/bitbox/ServerMain.java" />
       </list>
     </option>
   </component>
@@ -278,10 +261,6 @@
               <option name="myItemId" value="java" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="util" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
           </PATH>
           <PATH>
             <PATH_ELEMENT>
@@ -302,6 +281,10 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="bitbox" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -782,12 +765,12 @@
       <workItem from="1558065593715" duration="537000" />
       <workItem from="1559187059553" duration="34000" />
       <workItem from="1559290097319" duration="2362000" />
-      <workItem from="1559292670711" duration="3511000" />
+      <workItem from="1559292670711" duration="3827000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6444000" />
+    <option name="totallyTimeSpent" value="6760000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -1036,16 +1019,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/unimelb/bitbox/ServerMain.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-173">
-          <caret line="2" column="0" lean-forward="false" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/target/newkey">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1075,6 +1048,16 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/unimelb/bitbox/ServerMain.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="189" column="46" lean-forward="true" selection-start-line="189" selection-start-column="46" selection-end-line="189" selection-end-column="46" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
